@@ -1,25 +1,45 @@
-document.addEventListener('DOMContentLoaded', function() {
-    function updateSiteList() {
-      const siteList = document.getElementById('siteList');
-      siteList.innerHTML = '';
-      
-      chrome.extension.getBackgroundPage().blockedSites.forEach(site => {
-        const siteElement = document.createElement('div');
-        siteElement.className = 'site-item';
-        siteElement.textContent = site.replace('*://*.', '').replace('/*', '');
-        siteList.appendChild(siteElement);
-      });
-    }
+async function loadSettings() {
+  const data = await chrome.storage.local.get(['blockedSites', 'isEnabled', 'focusMode']);
   
-    document.getElementById('addSite').addEventListener('click', function() {
-      const newSite = document.getElementById('newSite').value.trim();
-      if (newSite) {
-        const pattern = `*://*.${newSite}/*`;
-        chrome.extension.getBackgroundPage().blockedSites.push(pattern);
-        document.getElementById('newSite').value = '';
-        updateSiteList();
-      }
-    });
+  document.getElementById('extensionToggle').checked = data.isEnabled;
+  updateSiteList(data.blockedSites);
   
-    updateSiteList();
-  });
+  if (data.focusMode.active) {
+    document.getElementById('focusTimer').textContent = 'Focus mode active';
+    document.getElementById('startFocus').textContent = 'Stop Focus';
+  }
+}
+
+async function toggleExtension() {
+  const isEnabled = document.getElementById('extensionToggle').checked;
+  await chrome.storage.local.set({ isEnabled });
+  updateRules();
+}
+
+async function startFocusMode() {
+  const duration = parseInt(document.getElementById('focusDuration').value);
+  const data = await chrome.storage.local.get('focusMode');
+  
+  data.focusMode.active = !data.focusMode.active;
+  data.focusMode.duration = duration;
+  data.focusMode.sites = ['youtube.com', 'facebook.com', 'twitter.com', 'instagram.com'];
+  
+  await chrome.storage.local.set({ focusMode: data.focusMode });
+  
+  if (data.focusMode.active) {
+    chrome.alarms.create('focusModeEnd', { delayInMinutes: duration });
+    document.getElementById('startFocus').textContent = 'Stop Focus';
+  } else {
+    chrome.alarms.clear('focusModeEnd');
+    document.getElementById('startFocus').textContent = 'Start Focus Mode';
+  }
+  
+  updateRules();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadSettings();
+  document.getElementById('extensionToggle').addEventListener('change', toggleExtension);
+  document.getElementById('addSite').addEventListener('click', addSite);
+  document.getElementById('startFocus').addEventListener('click', startFocusMode);
+});

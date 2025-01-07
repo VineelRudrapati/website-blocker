@@ -1,25 +1,80 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Website Blocker</title>
+  <title>Website Blocker & Focus Mode</title>
   <style>
     body {
       width: 300px;
-      padding: 10px;
+      padding: 15px;
+      font-family: Arial, sans-serif;
     }
-    .site-list {
-      margin: 10px 0;
+    .section {
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
     }
-    .site-item {
-      margin: 5px 0;
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #2196F3;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
     }
   </style>
 </head>
 <body>
-  <h2>Blocked Websites</h2>
-  <div class="site-list" id="siteList"></div>
-  <input type="text" id="newSite" placeholder="Enter website to block (e.g., example.com)">
-  <button id="addSite">Add Site</button>
-  <script src="popup.js"></script>
+  <div class="section">
+    <h3>Extension Status</h3>
+    <label class="switch">
+      <input type="checkbox" id="extensionToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="section">
+    <h3>Blocked Websites</h3>
+    <div id="siteList"></div>
+    <input type="text" id="newSite" placeholder="Enter website (e.g., example.com)">
+    <button id="addSite">Add</button>
+  </div>
+
+  <div class="section">
+    <h3>Focus Mode</h3>
+    <input type="number" id="focusDuration" min="1" max="120" value="25">
+    <button id="startFocus">Start Focus Mode</button>
+    <div id="focusTimer"></div>
+  </div>
 </body>
 </html>
